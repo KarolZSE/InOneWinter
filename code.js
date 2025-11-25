@@ -30,32 +30,92 @@ function CheckForColor(e) {
     return false;
 }
 
+function getCanvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    };
+}
+
 canvas.addEventListener('mousedown', (e) => {
     if (!CheckForColor(e)) return;
     Draw = true;
-    strokes.push([e.clientX, e.clientY]);
+    const { x, y } = getCanvasPos(e);
+    MinX = MaxX = x;
+    MinY = MaxY = y
+
+    strokes.push([x, y]);
 });
 
 canvas.addEventListener('mousemove', (e) => {
     if (!Draw) return;
-    strokes.push([e.clientX, e.clientY]);
-    if (MinX > e.clientX) MinX = e.clientX;
-    if (MinY > e.clientY) MinY = e.clientY;
+    const { x, y } = getCanvasPos(e);
+    strokes.push([x, y]);
 
-    if (MaxX < e.clientX) MaxX = e.clientX;
-    if (MaxY < e.clientY) MaxY = e.clientY;
+    if (x < MinX) MinX = x;
+    if (y < MinY) MinY = y;
+
+    if (x > MaxX) MaxX = x;
+    if (y > MaxY) MaxY = y;
     
 });
 
+function floodFill(imgData, x, y, fillColor) {
+    const { width, height, data } = imgData;
+    const stack = [[x, y]];
+    const startPos = (y * width + x) * 4;
+    const startColor = data.slice(startPos, startPos + 4);
+
+    function matchColor(pos) {
+        for (let i = 0; i < 4; i++) {
+            if (data[pos + i] !== startColor[i]) return false;
+        }
+        return true;
+    }
+
+    function setColor(pos) {
+        for (let i = 0; i < 4; i++) data[pos + i] = fillColor[i];
+    }
+
+    while (stack.length) {
+        const [cx, cy] = stack.pop();
+        const pos = (cy * width + cx) * 4;
+        if (!matchColor(pos)) continue;
+        setColor(pos);
+
+        if (cx > 0) stack.push([cx - 1, cy]);
+        if (cx < width - 1) stack.push([cx + 1, cy]);
+        if (cy > 0) stack.push([cx, cy - 1]);
+        if (cy < height - 1) stack.push([cx, cy + 1]);
+    }
+
+    context.putImageData(imgData, MinX, MinY);
+}
+
 canvas.addEventListener('mouseup', (e) => {
     Draw = false;
-    if (!CheckForColor(e)) return;
-    for (let i = 0; i < strokes.length - 1; i++) {
-        context.moveTo(...strokes[i]);
-        context.lineTo(...strokes[i + 1]);
-        context.stroke();
+    if (!CheckForColor(e)) {
+        strokes = [];
+        return;
     }
+
+    context.beginPath();
+    context.moveTo(...strokes[0]);
+    for (let i = 0; i < strokes.length; i++) {
+        context.lineTo(...strokes[i]);
+    }
+    context.closePath();
     context.fillStyle = 'black';
+    context.fill();
+
+    const { x, y } = getCanvasPos(e);
+
+    const imgData = context.getImageData(MinX, MinY, MaxX - MinX, MaxY - MinY);
+
+    floodFill(imgData, x - MinX, y - MinY, [0, 0, 0, 255]);
+
+    // context.fillStyle = 'black';
     // context.fillRect(MinX, MinY, MaxX - MinX, MaxY - MinY);
     strokes = [];
     console.log(strokes);
