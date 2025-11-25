@@ -63,31 +63,60 @@ canvas.addEventListener('mousemove', (e) => {
 
 function floodFill(imgData, x, y, fillColor) {
     const { width, height, data } = imgData;
-    const stack = [[x, y]];
+
     const startPos = (y * width + x) * 4;
     const startColor = data.slice(startPos, startPos + 4);
 
-    function matchColor(pos) {
-        for (let i = 0; i < 4; i++) {
-            if (data[pos + i] !== startColor[i]) return false;
-        }
-        return true;
+    if (startColor.every((v, i) => v === fillColor[i])) return;
+
+    const equalsStart = (pos) => {
+        return (
+            data[pos] === startColor[0] &&
+            data[pos + 1] === startColor[1] &&
+            data[pos + 2] === startColor[2] &&
+            data[pos + 3] === startColor[3]
+        );
     }
 
-    function setColor(pos) {
-        for (let i = 0; i < 4; i++) data[pos + i] = fillColor[i];
-    }
+    const stack = [[x, y]];
 
-    while (stack.length) {
+    while (stack.length > 0) {
         const [cx, cy] = stack.pop();
-        const pos = (cy * width + cx) * 4;
-        if (!matchColor(pos)) continue;
-        setColor(pos);
 
-        if (cx > 0) stack.push([cx - 1, cy]);
-        if (cx < width - 1) stack.push([cx + 1, cy]);
-        if (cy > 0) stack.push([cx, cy - 1]);
-        if (cy < height - 1) stack.push([cx, cy + 1]);
+        let left = nx;
+        let pos = (cy * width + cx) * 4;
+
+        while (left >= 0 && equalsStart(pos)) {
+            left--;
+            pos -= 4;
+        }
+
+        left++;
+
+        let right = nx;
+        pos = (cy * width + right) * 4;
+        while(right < width && equalsStart(pos)) {
+            right++;
+            pos += 4;
+        }
+
+        for (let i = left; i < right; i++) {
+            let p = (cy * width + i) * 4;
+            data[p] === fillColor[0];
+            data[p + 1] === fillColor[1];
+            data[p + 2] === fillColor[2];
+            data[p + 3] === fillColor[3];
+
+            if (cy > 0) {
+                let up = p - width * 4;
+                if (equalsStart(up)) stack.push([i, cy - 1]);
+            }
+
+            if (cy < height - 1) {
+                let down = p + width * 4;
+                if (equalsStart(down)) stack.push([i, cy + 1]);
+            }
+        }
     }
 
     context.putImageData(imgData, MinX, MinY);
@@ -115,8 +144,6 @@ canvas.addEventListener('mouseup', (e) => {
 
     floodFill(imgData, x - MinX, y - MinY, [0, 0, 0, 255]);
 
-    // context.fillStyle = 'black';
-    // context.fillRect(MinX, MinY, MaxX - MinX, MaxY - MinY);
     strokes = [];
     console.log(strokes);
 });
