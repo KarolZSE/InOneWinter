@@ -48,9 +48,49 @@ canvas.addEventListener('mousedown', (e) => {
     strokes.push([x, y]);
 });
 
+const BoardContainer = document.getElementById('BoardContainer');
 canvas.addEventListener('mousemove', (e) => {
-    if (!Draw) return;
     const { x, y } = getCanvasPos(e);
+    /*
+    console.log(canvas.offsetLeft, x);
+    if (x < 10) {
+        console.log('1');
+        canvas.style.left = canvas.offsetLeft - 10 - x + 'px';
+    } else if (x > canvas.offsetWidth - 10)  {
+        console.log('2');
+        canvas.style.left = canvas.offsetLeft + 10 - 600 + x + 'px';
+    }
+        */
+
+    const rect = BoardContainer.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    let newLeft = parseInt(canvas.style.left || "0");
+    let newTop = parseInt(canvas.style.top || "0");
+
+    if (mouseX < 10) {
+        newLeft += 5;
+    }
+
+    if (mouseX > rect.width - 10) {
+        newLeft -= 5;
+    }
+
+    if (mouseY < 10) {
+        newTop += 5;
+    }
+
+    if (mouseY > rect.height - 10) {
+        newTop -= 5;
+    }
+
+    canvas.style.left = newLeft + 'px';
+    canvas.style.top = newTop + 'px';
+
+
+
+    if (!Draw) return;
     strokes.push([x, y]);
 
     if (x < MinX) MinX = x;
