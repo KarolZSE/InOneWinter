@@ -54,7 +54,10 @@ canvas.style.position = 'absolute';
 canvas.style.left = '0px';
 canvas.style.top = '0px';
 
-let mousePos = { x: 0, y: 0 };
+let filledPixels = 0;
+
+const rect = BoardContainer.getBoundingClientRect();
+mousePos = { x: BoardContainer.width / 2, y: BoardContainer.height / 2 };
 
 BoardContainer.addEventListener('mousemove', (e) => {
     const rect = BoardContainer.getBoundingClientRect();
@@ -93,7 +96,14 @@ function scrollCanvas() {
 
     requestAnimationFrame(scrollCanvas);
 }
+
 scrollCanvas();
+
+
+BoardContainer.addEventListener('mouseleave', () => {
+    const rect = BoardContainer.getBoundingClientRect();
+    mousePos = { x: BoardContainer.width / 2, y: BoardContainer.height / 2 };
+});
 
 function floodFill(imgData, x, y, fillColor) {
     const { width, height, data } = imgData;
@@ -117,7 +127,7 @@ function floodFill(imgData, x, y, fillColor) {
     while (stack.length > 0) {
         const [cx, cy] = stack.pop();
 
-        let left = nx;
+        let left = cx;
         let pos = (cy * width + cx) * 4;
 
         while (left >= 0 && equalsStart(pos)) {
@@ -127,7 +137,7 @@ function floodFill(imgData, x, y, fillColor) {
 
         left++;
 
-        let right = nx;
+        let right = cx;
         pos = (cy * width + right) * 4;
         while(right < width && equalsStart(pos)) {
             right++;
@@ -136,10 +146,10 @@ function floodFill(imgData, x, y, fillColor) {
 
         for (let i = left; i < right; i++) {
             let p = (cy * width + i) * 4;
-            data[p] === fillColor[0];
-            data[p + 1] === fillColor[1];
-            data[p + 2] === fillColor[2];
-            data[p + 3] === fillColor[3];
+            data[p] = fillColor[0];
+            data[p + 1] = fillColor[1];
+            data[p + 2] = fillColor[2];
+            data[p + 3] = fillColor[3];
 
             if (cy > 0) {
                 let up = p - width * 4;
@@ -179,5 +189,5 @@ canvas.addEventListener('mouseup', (e) => {
     floodFill(imgData, x - MinX, y - MinY, [0, 0, 0, 255]);
 
     strokes = [];
-    console.log(strokes);
+    console.log((MaxX - MinX) * (MaxY - MinY));
 });
