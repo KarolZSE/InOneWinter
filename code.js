@@ -8,6 +8,7 @@ context.arc(300, 300, 50, 0, 2 * Math.PI);
 context.stroke();
 
 let strokes = [];
+let regions = [];
 let Draw = false;
 let MaxX = MaxY = 0;
 let MinX = MinY = 1000;
@@ -48,13 +49,50 @@ canvas.addEventListener('mousedown', (e) => {
     strokes.push([x, y]);
 });
 
+function polygonCentroid(points) {
+    let x = y = 0;
+    for (let p of points) {
+        x += p[0];
+        y += p[1];
+    }
+
+    return [x / points.length, y / points.length];
+}
+
+function drawAll() {
+    // context.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let region of regions) {
+        context.beginPath();
+        context.moveTo(...region.polygon[0]);
+        for (let p of region.polygon) context.lineTo(...p);
+        context.closePath();
+
+        if (region === hoveredRegion) {
+            context.fillStyle = "rgba(255, 230, 0, 0.6)";
+            context.fill();
+        } else {
+            context.fillStyle = region.fillColor;
+            context.fill();
+        }
+
+        if (region.text) {
+            const [cx, cy] = polygonCentroid(region.polygon);
+            context.fillStyle = 'red';
+            context.font = '16px sans-serif';
+            context.fillText(region.text, cx, cy);
+        }
+    }
+}
+
 const BoardContainer = document.getElementById('BoardContainer');
 
 canvas.style.position = 'absolute';
 canvas.style.left = '0px';
 canvas.style.top = '0px';
 
-let filledPixels = 0;
+
+let hoveredRegion = null;
 
 const rect = BoardContainer.getBoundingClientRect();
 mousePos = { x: BoardContainer.width / 2, y: BoardContainer.height / 2 };
@@ -65,6 +103,17 @@ BoardContainer.addEventListener('mousemove', (e) => {
     mousePos.y = e.clientY - rect.top;
 
     const { x, y } = getCanvasPos(e);
+    hoveredRegion = null;
+
+    for (let region of regions) {
+        if (PointInPolygon([x, y], region.polygon)) {
+            hoveredRegion = region;
+            console.log(hoveredRegion);
+            break;
+        }
+    }
+
+    drawAll();
     
     if (!Draw) return;
     strokes.push([x, y]);
@@ -182,6 +231,11 @@ canvas.addEventListener('mouseup', (e) => {
     context.fillStyle = 'black';
     context.fill();
 
+    regions.push({
+        polygon: [...strokes],
+        text: '1234'
+    });
+
     const { x, y } = getCanvasPos(e);
 
     const imgData = context.getImageData(MinX, MinY, MaxX - MinX, MaxY - MinY);
@@ -191,3 +245,22 @@ canvas.addEventListener('mouseup', (e) => {
     strokes = [];
     console.log((MaxX - MinX) * (MaxY - MinY));
 });
+
+
+function PointInPolygon(point, polygon) {
+    let [x, y] = point;
+    let inside = false;
+
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        let xi = polygon[i][0], yi = polygon[i][1];
+        let xj = polygon[j][0], yj = polygon[j][1];
+
+        let intersect = 
+            yi > y != yj > y &&
+            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+
+        if (intersect) inside = !inside;
+    }
+
+    return inside;
+}
