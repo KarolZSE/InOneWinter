@@ -49,47 +49,20 @@ canvas.addEventListener('mousedown', (e) => {
 });
 
 const BoardContainer = document.getElementById('BoardContainer');
-canvas.addEventListener('mousemove', (e) => {
-    const { x, y } = getCanvasPos(e);
-    /*
-    console.log(canvas.offsetLeft, x);
-    if (x < 10) {
-        console.log('1');
-        canvas.style.left = canvas.offsetLeft - 10 - x + 'px';
-    } else if (x > canvas.offsetWidth - 10)  {
-        console.log('2');
-        canvas.style.left = canvas.offsetLeft + 10 - 600 + x + 'px';
-    }
-        */
 
+canvas.style.position = 'absolute';
+canvas.style.left = '0px';
+canvas.style.top = '0px';
+
+let mousePos = { x: 0, y: 0 };
+
+BoardContainer.addEventListener('mousemove', (e) => {
     const rect = BoardContainer.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    mousePos.x = e.clientX - rect.left;
+    mousePos.y = e.clientY - rect.top;
 
-    let newLeft = parseInt(canvas.style.left || "0");
-    let newTop = parseInt(canvas.style.top || "0");
-
-    if (mouseX < 10) {
-        newLeft += 5;
-    }
-
-    if (mouseX > rect.width - 10) {
-        newLeft -= 5;
-    }
-
-    if (mouseY < 10) {
-        newTop += 5;
-    }
-
-    if (mouseY > rect.height - 10) {
-        newTop -= 5;
-    }
-
-    canvas.style.left = newLeft + 'px';
-    canvas.style.top = newTop + 'px';
-
-
-
+    const { x, y } = getCanvasPos(e);
+    
     if (!Draw) return;
     strokes.push([x, y]);
 
@@ -100,6 +73,27 @@ canvas.addEventListener('mousemove', (e) => {
     if (y > MaxY) MaxY = y;
     
 });
+
+function scrollCanvas() {
+    const rect = BoardContainer.getBoundingClientRect();
+    let left = parseInt(canvas.style.left);
+    let top = parseInt(canvas.style.top);    
+
+    const edge = 20;
+    const speed = 10;
+
+    if (mousePos.x < edge) left += speed;
+    if (mousePos.x > rect.width - edge) left -= speed;
+
+    if (mousePos.y < edge) top += speed;
+    if (mousePos.y > rect.height - edge) top -= speed;
+    
+    canvas.style.left = left + 'px';
+    canvas.style.top = top + 'px';
+
+    requestAnimationFrame(scrollCanvas);
+}
+scrollCanvas();
 
 function floodFill(imgData, x, y, fillColor) {
     const { width, height, data } = imgData;
