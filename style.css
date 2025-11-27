@@ -34,3 +34,14 @@ body {
     margin: 0;
     padding: 0;
 }
+
+#RegionResources {
+    position: absolute;
+    top: 50%;
+    left: 80%;
+    transform: translate(-20%, -50%);
+    width: 280px;
+    height: 580px;
+    padding: 10px;
+    border: 1px solid black;
+}

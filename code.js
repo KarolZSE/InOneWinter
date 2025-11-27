@@ -78,7 +78,7 @@ function drawAll() {
 
         if (region.text) {
             const [cx, cy] = polygonCentroid(region.polygon);
-            context.fillStyle = 'red';
+            context.fillStyle = 'black';
             context.font = '16px sans-serif';
             context.fillText(region.text, cx, cy);
         }
@@ -108,7 +108,10 @@ BoardContainer.addEventListener('mousemove', (e) => {
     for (let region of regions) {
         if (PointInPolygon([x, y], region.polygon)) {
             hoveredRegion = region;
-            console.log(hoveredRegion);
+            document.getElementById('text').textContent = region.text;
+            document.getElementById('fuel').textContent = region.fuel;
+            document.getElementById('food').textContent = region.food;
+            document.getElementById('water').textContent = region.water;
             break;
         }
     }
@@ -231,9 +234,13 @@ canvas.addEventListener('mouseup', (e) => {
     context.fillStyle = 'black';
     context.fill();
 
+    let SizeEstimate = (MaxX - MinX) * (MaxY - MinY);
     regions.push({
         polygon: [...strokes],
-        text: '1234'
+        text: '1234',
+        fuel: (SizeEstimate * Math.random() * 0.03).toFixed(2),
+        food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
+        water: (SizeEstimate * Math.random() * 0.05).toFixed(2)
     });
 
     const { x, y } = getCanvasPos(e);
