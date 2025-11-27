@@ -36,6 +36,7 @@ body {
 }
 
 #RegionResources {
+    display: none;
     position: absolute;
     top: 50%;
     left: 80%;
@@ -43,5 +44,20 @@ body {
     width: 280px;
     height: 580px;
     padding: 10px;
+    border: 1px solid black;
+}
+
+#BuildingsMenu {
+    display: grid;
+    position: absolute;
+    bottom: 10px;
+    height: 60px;
+    width: 180px;
+    grid-template-columns: repeat(3, 60px);
+    gap: 2px;
+}
+
+
+#BuildingsMenu > div {
     border: 1px solid black;
 }

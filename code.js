@@ -69,9 +69,10 @@ function drawAll() {
         context.closePath();
 
         if (region === hoveredRegion) {
-            context.fillStyle = "rgba(255, 230, 0, 0.6)";
+            context.fillStyle = "rgba(255, 230, 0, 1)";
             context.fill();
         } else {
+            document.getElementById('RegionResources').style.display = 'none';
             context.fillStyle = region.fillColor;
             context.fill();
         }
@@ -108,6 +109,7 @@ BoardContainer.addEventListener('mousemove', (e) => {
     for (let region of regions) {
         if (PointInPolygon([x, y], region.polygon)) {
             hoveredRegion = region;
+            document.getElementById('RegionResources').style.display = 'inline';
             document.getElementById('text').textContent = region.text;
             document.getElementById('fuel').textContent = region.fuel;
             document.getElementById('food').textContent = region.food;
@@ -271,3 +273,37 @@ function PointInPolygon(point, polygon) {
 
     return inside;
 }
+
+const buildings = document.querySelectorAll('#BuildingsMenu div');
+buildings.forEach(e => {
+    let isDragging = false;
+    e.addEventListener('mousedown', (ev) => {
+        isDragging = true;
+        offsetX = ev.offsetX;
+        offsetY = ev.offsetY;
+    });
+
+    document.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+
+    document.addEventListener("dragover", (ev) => {
+        if (!isDragging) return;
+
+        e.style.left = (ev.pageX - offsetX) + 'px';
+        e.style.top = (ev.pageY - offsetY) + 'px';
+
+        const rect = canvas.getBoundingClientRect();
+        const cx = ev.clientX - rect.left;
+        const cy = ev.clientY - rect.top;
+
+        let overRegion = null;
+        for (let region of regions) {
+            if (PointInPolygon([cx, cy], region.polygon)) {
+                overRegion = region;
+                console.log('works')
+                break;
+            }
+        }
+    });
+});
