@@ -1,5 +1,5 @@
 const canvas = document.getElementById("Board");
-const context = canvas.getContext('2d');
+const context = canvas.getContext('2d', { willReadFrequently: true});
 
 context.fillStyle = 'white';
 context.fillRect(0, 0, 600, 600);
@@ -9,6 +9,7 @@ context.stroke();
 
 let strokes = [];
 let regions = [];
+let placedBuildings = [];
 let Draw = false;
 let MaxX = MaxY = 0;
 let MinX = MinY = 1000;
@@ -79,10 +80,14 @@ function drawAll() {
 
         if (region.text) {
             const [cx, cy] = polygonCentroid(region.polygon);
-            context.fillStyle = 'black';
+            context.fillStyle = 'green';
             context.font = '16px sans-serif';
             context.fillText(region.text, cx, cy);
         }
+    }
+
+    for (let building of placedBuildings) {
+        context.drawImage(building.img, building.x, building.y, building.width, building.height);
     }
 }
 
@@ -233,7 +238,7 @@ canvas.addEventListener('mouseup', (e) => {
         context.lineTo(...strokes[i]);
     }
     context.closePath();
-    context.fillStyle = 'black';
+    context.fillStyle = 'green';
     context.fill();
 
     let SizeEstimate = (MaxX - MinX) * (MaxY - MinY);
@@ -274,49 +279,13 @@ function PointInPolygon(point, polygon) {
     return inside;
 }
 
-function placeBuildingOnCanvas(buildingDiv, x, y) {
-    const img = new Image();
-
-    const bg = getComputedStyle(buildingDiv).backgroundImage;
-
-    const urlMatch = bg.match(/url\(["']?([^"']*)["']?\)/);
-    if (urlMatch && urlMatch[1]) {
-        img.src = urlMatch[1];
-    }
-
-    img.onload = () => {
-        const size = 32;
-        context.drawImage(img, x - size / 2, y - size / 2, size, size);
-    };
-}
-
 const buildings = document.querySelectorAll('#BuildingsMenu div');
 buildings.forEach(e => {
-    let offsetX = 0;
-    let offsetY = 0;
-
     let isDragging = false;
-
-    const originalPosition = {
-        position: getComputedStyle(e).position,
-        left: e.style.left,
-        top: e.style.top
-    };
-
     e.addEventListener('mousedown', (ev) => {
         isDragging = true;
         offsetX = ev.offsetX;
         offsetY = ev.offsetY;
-
-        e.style.position = 'absolute';
-        e.style.zIndex = '100';
-    });
-
-    document.addEventListener("mousemove", (ev) => {
-        if (!isDragging) return;
-
-        e.style.left = (ev.pageX - offsetX) + 'px';
-        e.style.top = (ev.pageY - offsetY) + 'px';
     });
 
     document.addEventListener('mouseup', (ev) => {
@@ -329,22 +298,36 @@ buildings.forEach(e => {
         const rect = canvas.getBoundingClientRect();
         const cx = ev.clientX - rect.left;
         const cy = ev.clientY - rect.top;
+        let overRegion = null;
+        for (let region of regions) {
+            if (PointInPolygon([cx, cy], region.polygon)) {
+                overRegion = region;
+                console.log('works 1/2')
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                const bgImage = window.getComputedStyle(e).backgroundImage;
+                const urlMatch = bgImage.match(/url\(["']?([^"']*)["']?\)/);
 
-        if (cx < 0 || cy < 0 || cx > canvas.width || cy > canvas.height) return;
+                if (urlMatch && urlMatch[1]) {
+                    console.log(2 / 3);
+                    img.src = urlMatch[1];
+                    img.onload = () => {
 
-        const region = regions.find(r => PointInPolygon([cx, cy], r.polygon));
-        if (!region) return;
+                        placedBuildings.push({
+                            img: img,
+                            x: cx,
+                            y: cy,
+                            width: 80,
+                            height: 80
+                        });
 
-        placeBuildingOnCanvas(e, cx, cy);
+                        drawAll();
+                    }
+                };
+            }
 
-        region.buildings.push({
-            x: cx,
-            y: cy,
-            type: e.id
-        });
-
-        region.food = Math.max(0, region.food - 1);
-
-        drawAll();
+            break;
+        }
+        
     });
 });

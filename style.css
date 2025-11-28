@@ -65,6 +65,6 @@ body {
 }
 
 #FuelEx {
-    background: url('bomb1.png');
+    background-image: url('bomb1.png');
     background-size: 60px 60px;
 }
