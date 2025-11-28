@@ -313,9 +313,11 @@ buildings.forEach(e => {
         e.style.top = (ev.pageY - offsetY) + 'px';
     });
 
-    document.addEventListener('mouseup', (ev) => {
+    canvas.addEventListener('mouseup', (ev) => {
         if (!isDragging) return;
         isDragging = false;
+
+        const { x: cx, y: cy } = getCanvasPos(ev);
 
         e.style.left = (ev.pageX - offsetX) + 'px';
         e.style.top = (ev.pageY - offsetY) + 'px';
@@ -325,33 +327,40 @@ buildings.forEach(e => {
         const canvasLeft = parseInt(canvas.style.left) || 0;
         const canvasTop = parseInt(canvas.style.top) || 0;
 
-        const cx = ev.clientX - rect.left - canvasLeft;
-        const cy = ev.clientY - rect.top - canvasTop;
-
         for (let region of regions) {
             if (PointInPolygon([cx, cy], region.polygon)) {
                 console.log('works 1/2')
 
                 const img = buildingImages.get(e);
 
-                if (img && img.complete) {
-                    placedBuildings.push({
-                        img: img,
-                        x: cx,
-                        y: cy,
-                        width: 80,
-                        height: 80
-                    });
+                if (img) {
+                    if (img.complete) {
+                        placedBuildings.push({
+                            img: img,
+                            x: cx,
+                            y: cy,
+                            width: 80,
+                            height: 80
+                        });
 
-                drawAll();
+                    drawAll();
+                    } else {
+                        img.onload = () => {
+                            placedBuildings.push({
+                                img: img,
+                                x: cx,
+                                y: cy,
+                                width: 80,
+                                height: 80
+                            });
+
+                        drawAll();
+                        };
+                    }   
                 }
 
-                
-                offsetX = ev.offsetX;
-                offsetY = ev.offsetY;
-                break;
-            }
+            break;
+            } 
         }
-        
     });
 });
