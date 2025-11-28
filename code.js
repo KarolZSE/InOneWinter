@@ -10,6 +10,8 @@ context.stroke();
 let strokes = [];
 let regions = [];
 let placedBuildings = [];
+let buildingImages = new Map();
+
 let Draw = false;
 let MaxX = MaxY = 0;
 let MinX = MinY = 1000;
@@ -281,11 +283,34 @@ function PointInPolygon(point, polygon) {
 
 const buildings = document.querySelectorAll('#BuildingsMenu div');
 buildings.forEach(e => {
+    const bgImage = window.getComputedStyle(e).backgroundImage;
+    const urlMatch = bgImage.match(/url\(["']?([^"']*)["']?\)/);
+
+    if (urlMatch && urlMatch[1]) {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        console.log(2 / 3);
+        img.src = urlMatch[1];
+        buildingImages.set(e, img);
+    }
+});
+
+buildings.forEach(e => {
     let isDragging = false;
+    let offsetX, offsetY;
+
     e.addEventListener('mousedown', (ev) => {
         isDragging = true;
         offsetX = ev.offsetX;
         offsetY = ev.offsetY;
+        ev.stopPropagation();
+    });
+
+    e.addEventListener('mousemove', (ev) => {
+        if (!isDragging) return;
+
+        e.style.left = (ev.pageX - offsetX) + 'px';
+        e.style.top = (ev.pageY - offsetY) + 'px';
     });
 
     document.addEventListener('mouseup', (ev) => {
@@ -296,37 +321,36 @@ buildings.forEach(e => {
         e.style.top = (ev.pageY - offsetY) + 'px';
 
         const rect = canvas.getBoundingClientRect();
-        const cx = ev.clientX - rect.left;
-        const cy = ev.clientY - rect.top;
-        let overRegion = null;
+
+        const canvasLeft = parseInt(canvas.style.left) || 0;
+        const canvasTop = parseInt(canvas.style.top) || 0;
+
+        const cx = ev.clientX - rect.left - canvasLeft;
+        const cy = ev.clientY - rect.top - canvasTop;
+
         for (let region of regions) {
             if (PointInPolygon([cx, cy], region.polygon)) {
-                overRegion = region;
                 console.log('works 1/2')
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                const bgImage = window.getComputedStyle(e).backgroundImage;
-                const urlMatch = bgImage.match(/url\(["']?([^"']*)["']?\)/);
 
-                if (urlMatch && urlMatch[1]) {
-                    console.log(2 / 3);
-                    img.src = urlMatch[1];
-                    img.onload = () => {
+                const img = buildingImages.get(e);
 
-                        placedBuildings.push({
-                            img: img,
-                            x: cx,
-                            y: cy,
-                            width: 80,
-                            height: 80
-                        });
+                if (img && img.complete) {
+                    placedBuildings.push({
+                        img: img,
+                        x: cx,
+                        y: cy,
+                        width: 80,
+                        height: 80
+                    });
 
-                        drawAll();
-                    }
-                };
+                drawAll();
+                }
+
+                
+                offsetX = ev.offsetX;
+                offsetY = ev.offsetY;
+                break;
             }
-
-            break;
         }
         
     });
