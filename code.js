@@ -274,21 +274,54 @@ function PointInPolygon(point, polygon) {
     return inside;
 }
 
+function placeBuildingOnCanvas(buildingDiv, x, y) {
+    const img = new Image();
+
+    const bg = getComputedStyle(buildingDiv).backgroundImage;
+
+    const urlMatch = bg.match(/url\(["']?([^"']*)["']?\)/);
+    if (urlMatch && urlMatch[1]) {
+        img.src = urlMatch[1];
+    }
+
+    img.onload = () => {
+        const size = 32;
+        context.drawImage(img, x - size / 2, y - size / 2, size, size);
+    };
+}
+
 const buildings = document.querySelectorAll('#BuildingsMenu div');
 buildings.forEach(e => {
+    let offsetX = 0;
+    let offsetY = 0;
+
     let isDragging = false;
+
+    const originalPosition = {
+        position: getComputedStyle(e).position,
+        left: e.style.left,
+        top: e.style.top
+    };
+
     e.addEventListener('mousedown', (ev) => {
         isDragging = true;
         offsetX = ev.offsetX;
         offsetY = ev.offsetY;
+
+        e.style.position = 'absolute';
+        e.style.zIndex = '100';
     });
 
-    document.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-
-    document.addEventListener("dragover", (ev) => {
+    document.addEventListener("mousemove", (ev) => {
         if (!isDragging) return;
+
+        e.style.left = (ev.pageX - offsetX) + 'px';
+        e.style.top = (ev.pageY - offsetY) + 'px';
+    });
+
+    document.addEventListener('mouseup', (ev) => {
+        if (!isDragging) return;
+        isDragging = false;
 
         e.style.left = (ev.pageX - offsetX) + 'px';
         e.style.top = (ev.pageY - offsetY) + 'px';
@@ -297,13 +330,21 @@ buildings.forEach(e => {
         const cx = ev.clientX - rect.left;
         const cy = ev.clientY - rect.top;
 
-        let overRegion = null;
-        for (let region of regions) {
-            if (PointInPolygon([cx, cy], region.polygon)) {
-                overRegion = region;
-                console.log('works')
-                break;
-            }
-        }
+        if (cx < 0 || cy < 0 || cx > canvas.width || cy > canvas.height) return;
+
+        const region = regions.find(r => PointInPolygon([cx, cy], r.polygon));
+        if (!region) return;
+
+        placeBuildingOnCanvas(e, cx, cy);
+
+        region.buildings.push({
+            x: cx,
+            y: cy,
+            type: e.id
+        });
+
+        region.food = Math.max(0, region.food - 1);
+
+        drawAll();
     });
 });

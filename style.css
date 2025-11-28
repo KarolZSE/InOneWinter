@@ -60,4 +60,11 @@ body {
 
 #BuildingsMenu > div {
     border: 1px solid black;
+    height: 60px;
+    width: 60px;
+}
+
+#FuelEx {
+    background: url('bomb1.png');
+    background-size: 60px 60px;
 }
