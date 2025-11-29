@@ -25,16 +25,23 @@ let WaterMined = 100;
 function CheckForColor(e) {
     const rect = canvas.getBoundingClientRect();
 
-    const width = Math.min(5, canvas.width - Math.max(0, (e.clientX - rect.left) - 2));
-    const height = Math.min(5, canvas.height - Math.max(0, (e.clientY - rect.top) - 2));
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
 
-    const pixel = context.getImageData(Math.max(0, (e.clientX - rect.left) - 2), Math.max(0, (e.clientY - rect.top) - 2), width, height).data;
+    let mouseX = (e.clientX - rect.left) * scaleX;
+    let mouseY = (e.clientY - rect.top) * scaleY;
+
+    const width = Math.min(5, canvas.width - Math.max(0, mouseX - 2));
+    const height = Math.min(5, canvas.height - Math.max(0, mouseY - 2));
+
+    const pixel = context.getImageData(Math.max(0, mouseX - 2), Math.max(0, mouseY - 2), width, height).data;
 
     for (let i = 0; i < pixel.length; i += 4) {
         const r = pixel[i];
         const g = pixel[i + 1];
         const b = pixel[i + 2];
 
+        console.log(r, g, b);
         if (r < 200) return true;
     };
     return false;
@@ -43,8 +50,8 @@ function CheckForColor(e) {
 function getCanvasPos(e) {
     const rect = canvas.getBoundingClientRect();
     return {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
+        x: (e.clientX - rect.left) / zoom,
+        y: (e.clientY - rect.top) / zoom
     };
 }
 
