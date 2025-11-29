@@ -17,6 +17,10 @@ let Draw = false;
 let MaxX = MaxY = 0;
 let MinX = MinY = 1000;
 
+const FuelMinedHTML = document.getElementById('FuelMined');
+const FuelExSideInfo = document.getElementById('FuelExSideInfo');
+let FuelMined = 0;
+
 function CheckForColor(e) {
     const rect = canvas.getBoundingClientRect();
 
@@ -125,6 +129,9 @@ BoardContainer.addEventListener('mousemove', (e) => {
             document.getElementById('fuel').textContent = region.fuel;
             document.getElementById('food').textContent = region.food;
             document.getElementById('water').textContent = region.water;
+            if (region.fuel - 1 >= 0) {
+                FuelExSideInfo.textContent = `This region produces ${region.FuelExtractors} liter of fuel per second`;
+            } else FuelExSideInfo.textContent = 'The region has run out off fuel';
             break;
         }
     }
@@ -254,7 +261,8 @@ canvas.addEventListener('mouseup', (e) => {
         text: '1234',
         fuel: (SizeEstimate * Math.random() * 0.03).toFixed(2),
         food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
-        water: (SizeEstimate * Math.random() * 0.05).toFixed(2)
+        water: (SizeEstimate * Math.random() * 0.05).toFixed(2),
+        FuelExtractors: 0
     });
 
     const { x, y } = getCanvasPos(e);
@@ -300,10 +308,6 @@ buildings.forEach(e => {
     }
 });
 
-const FuelMinedHTML = document.getElementById('FuelMined');
-const FuelExSideInfo = document.getElementById('FuelExSideInfo');
-let FuelExtractors = 0;
-let FuelMined = 0;
 buildings.forEach(e => {
     let isDragging = false;
     let offsetX, offsetY;
@@ -335,14 +339,14 @@ buildings.forEach(e => {
             if (PointInPolygon([cx, cy], region.polygon)) {
 
                 if (e.id == 'FuelEx') {
-                    FuelExtractors++;
-                    setInterval(() => {
-                        if (region.fuel > 0) {
+                    region.FuelExtractors++;
+                    const FuelMining = setInterval(() => {
+                        if (region.fuel - 1 >= 0) {
                             region.fuel--;
                             FuelMinedHTML.textContent = ++FuelMined;
-                            FuelExSideInfo.textContent = `This region produces ${FuelExtractors} liter of fuel per second`;
                         } else {
-                            FuelExSideInfo.textContent = 'The region has run out off fuel';
+                            region.fuel = 0;
+                            clearInterval(FuelMining);
                         }
                     }, 1000);
                 }
@@ -353,10 +357,10 @@ buildings.forEach(e => {
                     if (img.complete) {
                         placedBuildings.push({
                             img: img,
-                            x: cx - 40,
-                            y: cy - 40,
-                            width: 80,
-                            height: 80
+                            x: cx - 20,
+                            y: cy - 20,
+                            width: 40,
+                            height: 40,
                         });
 
                     drawAll();
@@ -364,10 +368,10 @@ buildings.forEach(e => {
                         img.onload = () => {
                             placedBuildings.push({
                                 img: img,
-                                x: cx - 40,
-                                y: cy - 40,
-                                width: 80,
-                                height: 80
+                                x: cx - 20,
+                                y: cy - 20,
+                                width: 40,
+                                height: 40
                             });
 
                         drawAll();
