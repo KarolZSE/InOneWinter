@@ -295,6 +295,10 @@ buildings.forEach(e => {
     }
 });
 
+const FuelMinedHTML = document.getElementById('FuelMined');
+const FuelExSideInfo = document.getElementById('FuelExSideInfo');
+let FuelExtractors = 0;
+let FuelMined = 0;
 buildings.forEach(e => {
     let isDragging = false;
     let offsetX, offsetY;
@@ -322,14 +326,21 @@ buildings.forEach(e => {
         e.style.left = (ev.pageX - offsetX) + 'px';
         e.style.top = (ev.pageY - offsetY) + 'px';
 
-        const rect = canvas.getBoundingClientRect();
-
-        const canvasLeft = parseInt(canvas.style.left) || 0;
-        const canvasTop = parseInt(canvas.style.top) || 0;
-
         for (let region of regions) {
             if (PointInPolygon([cx, cy], region.polygon)) {
-                console.log('works 1/2')
+
+                if (e.id == 'FuelEx') {
+                    FuelExtractors++;
+                    setInterval(() => {
+                        if (region.fuel > 0) {
+                            region.fuel--;
+                            FuelMinedHTML.textContent = ++FuelMined;
+                            FuelExSideInfo.textContent = `This region produces ${FuelExtractors} liter of fuel per second`;
+                        } else {
+                            FuelExSideInfo.textContent = 'The region has run out off fuel';
+                        }
+                    }, 1000);
+                }
 
                 const img = buildingImages.get(e);
 
@@ -364,3 +375,33 @@ buildings.forEach(e => {
         }
     });
 });
+
+const PeopleHTML = document.getElementById('People');
+const TemperatureHTML = document.getElementById('Temperature');
+let People = 2;
+let Temperature = 15;
+setInterval(() => {
+    People++;
+    PeopleHTML.textContent = People;
+}, 5000);
+
+setInterval(() => {
+    if (FuelMined > 0) {
+        FuelMined -= 0.5;
+        Temperature = Math.min(Temperature + 1, 30);
+    } else {
+        Temperature--;
+    }
+
+    if (Temperature <= 0) {
+        People--;
+    }
+    
+    if (People <= 0) {
+        console.log('Games Over!');
+    }
+
+    FuelMinedHTML.textContent = FuelMined;
+    TemperatureHTML.textContent = Temperature;
+    PeopleHTML.textContent = People;
+}, 1000);
