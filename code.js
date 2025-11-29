@@ -138,7 +138,7 @@ BoardContainer.addEventListener('mousemove', (e) => {
     hoveredRegion = null;
 
     for (let region of regions) {
-        if (PointInPolygon([x, y], region.polygon)) {
+        if (PointInMultiPolygon([x, y], region.polygon)) {
             hoveredRegion = region;
             document.getElementById('text').textContent = region.text;
 
@@ -290,20 +290,6 @@ function floodFill(imgData, x, y, fillColor) {
     context.putImageData(imgData, MinX, MinY);
 }
 
-/*
-function regionOverlaps(strokes, regions) {
-    for (const region of regions) {
-        for (const [x, y] of strokes) {
-            if (PointInPolygon([x, y], region.polygon)) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-    */
-
 function polygonArea(points) {
     let area = 0;
     const n = points.length;
@@ -318,6 +304,25 @@ function polygonArea(points) {
     return Math.abs(area / 2);
 }
 
+function polygonOverlap(polyA, polyB) {
+    const intersection = martinez.intersection([polyA], [polyB]);
+    return intersection && intersection.length > 0;
+}
+
+function flattenAndFilter(polys, minArea = 20) {
+    let result = [];
+    function _flatten(ps) {
+        for (let p of ps) {
+            if (typeof p[0][0] === 'number') {
+                if (polygonArea(p) >= minArea) result.push(p);
+            } else {
+                _flatten(p);
+            }
+        }
+    }
+    _flatten(polys);
+    return result;
+}
 canvas.addEventListener('mouseup', (e) => {
     Draw = false;
 
@@ -332,9 +337,9 @@ canvas.addEventListener('mouseup', (e) => {
     
     let newPoly = [[...strokes]];
 
-    for (let region of regions) {
-        newPoly = martinez.diff(newPoly, [region.polygon]);
-        if (!newPoly || newPoly.length === 0) break;
+    if (regions.length > 0) {
+        const existingPolygons = regions.map(r => r.polygon);
+        newPoly = martinez.diff(newPoly, existingPolygons);
     }
 
     if (!newPoly || newPoly.length === 0) {
@@ -356,7 +361,28 @@ canvas.addEventListener('mouseup', (e) => {
         return result;
     }
     
-    const flattened = flatten(newPoly);
+    const flattened = flattenAndFilter(newPoly);
+
+    /*
+    let overlaps = false;
+
+    for (const newPoly of flattened) {
+        for (const existingRegion of regions) {
+            if (polygonOverlap(newPoly, existingRegion.polygon)) {
+                overlaps = true;
+                break;
+            }
+        }
+
+        if (overlaps) break;
+    }
+
+    if (overlaps) {
+        strokes = [];
+        console.log('test2')
+        return;
+    }
+        */
 
     for (let poly of flattened) {
         let SizeEstimate = polygonArea(poly);
@@ -381,6 +407,17 @@ canvas.addEventListener('mouseup', (e) => {
     drawAll();
 });
 
+function PointInMultiPolygon(point, polygonOrMulitipolygon) {
+    if (!Array.isArray(polygonOrMulitipolygon[0][0])) {
+        return PointInPolygon(point, polygonOrMulitipolygon);
+    }
+
+    for (let poly of polygonOrMulitipolygon) {
+        if (PointInPolygon(point, poly)) return true;
+    }
+
+    return false;
+}
 
 function PointInPolygon(point, polygon) {
     let [x, y] = point;
@@ -443,7 +480,7 @@ buildings.forEach(e => {
         const { x: cx, y: cy } = getCanvasPos(ev);
 
         for (let region of regions) {
-            if (PointInPolygon([cx, cy], region.polygon)) {
+            if (PointInMultiPolygon([cx, cy], region.polygon)) {
 
                 if (e.id == 'FuelEx') {
                     region.FuelExtractors++;
