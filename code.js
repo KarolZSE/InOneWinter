@@ -2,13 +2,6 @@ const canvas = document.getElementById("Board");
 const context = canvas.getContext('2d', { willReadFrequently: true});
 const BoardContainer = document.getElementById('BoardContainer');
 
-context.fillStyle = 'white';
-context.fillRect(0, 0, canvas.width, canvas.height);
-context.beginPath();
-console.log(BoardContainer.width / 2, BoardContainer.height / 2);
-context.arc(BoardContainer.offsetWidth / 2, BoardContainer.offsetHeight / 2, 50, 0, 2 * Math.PI);
-context.stroke();
-
 let strokes = [];
 let regions = [];
 let placedBuildings = [];
@@ -76,7 +69,16 @@ function polygonCentroid(points) {
 }
 
 function drawAll() {
-    // context.clearRect(0, 0, canvas.width, canvas.height);
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = 'white';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.beginPath();
+    context.arc(BoardContainer.offsetWidth / 2, BoardContainer.offsetHeight / 2, 50, 0, 2 * Math.PI);
+    context.stroke();
+    
+    context.fillStyle = 'rgba(0, 68, 255, 0.5)';
+
     if (hoveredRegion) {
         document.getElementById('RegionResources').style.display = 'inline';
     } else {
@@ -93,13 +95,13 @@ function drawAll() {
             context.fillStyle = "rgba(255, 230, 0, 1)";
             context.fill();
         } else {
-            context.fillStyle = region.fillColor;
+            context.fillStyle = 'rgba(0, 68, 255, 0.5)';
             context.fill();
         }
 
         if (region.text) {
             const [cx, cy] = polygonCentroid(region.polygon);
-            context.fillStyle = 'green';
+            context.fillStyle = 'rgba(0, 68, 255, 0.1)';
             context.font = '16px sans-serif';
             context.fillText(region.text, cx, cy);
         }
@@ -281,43 +283,95 @@ function floodFill(imgData, x, y, fillColor) {
     context.putImageData(imgData, MinX, MinY);
 }
 
+/*
+function regionOverlaps(strokes, regions) {
+    for (const region of regions) {
+        for (const [x, y] of strokes) {
+            if (PointInPolygon([x, y], region.polygon)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+    */
+
+function polygonArea(points) {
+    let area = 0;
+    const n = points.length;
+
+    for (let i = 0; i < n; i++) {
+        const [x0, y0] = points[i];
+        const [x1, y1] = points[(i + 1) % n];
+
+        area += (x0 * y1 - x1 * y0);
+    }
+
+    return Math.abs(area / 2);
+}
+
 canvas.addEventListener('mouseup', (e) => {
     Draw = false;
+
+    if (strokes.length === 0) {
+        return;
+    }
+
     if (!CheckForColor(e)) {
         strokes = [];
         return;
     }
+    
+    let newPoly = [[...strokes]];
 
-    context.beginPath();
-    context.moveTo(...strokes[0]);
-    for (let i = 0; i < strokes.length; i++) {
-        context.lineTo(...strokes[i]);
+    for (let region of regions) {
+        newPoly = martinez.diff(newPoly, [region.polygon]);
+        if (!newPoly || newPoly.length === 0) break;
     }
-    context.closePath();
-    context.fillStyle = 'green';
-    context.fill();
 
-    let SizeEstimate = (MaxX - MinX) * (MaxY - MinY);
-    GlobalSizeEstimate += SizeEstimate;
-    regions.push({
-        polygon: [...strokes],
-        text: '1234',
-        fuel: (SizeEstimate * Math.random() * 0.03).toFixed(2),
-        food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
-        water: (SizeEstimate * Math.random() * 0.05).toFixed(2),
-        FuelExtractors: 0,
-        Farms: 0,
-        Wells: 0
-    });
+    if (!newPoly || newPoly.length === 0) {
+        console.log('Region overlaps');
+        strokes = [];
+        return;
+    }
 
-    const { x, y } = getCanvasPos(e);
+    function flatten(polys) {
+        let result = [];
+        for (let p of polys) {
+            if (typeof p[0][0] === 'number') {
+                result.push(p);
+            } else {
+                result.push(...flatten(p));
+            }
+        }
 
-    const imgData = context.getImageData(MinX, MinY, MaxX - MinX, MaxY - MinY);
+        return result;
+    }
+    
+    const flattened = flatten(newPoly);
 
-    floodFill(imgData, x - MinX, y - MinY, [0, 0, 0, 255]);
+    for (let poly of flattened) {
+        let SizeEstimate = polygonArea(poly);
+        GlobalSizeEstimate += SizeEstimate;
+
+        regions.push({
+            polygon: poly,
+            text: '1234',
+            fillColor: 'green',
+            fuel: (SizeEstimate * Math.random() * 0.03).toFixed(2),
+            food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
+            water: (SizeEstimate * Math.random() * 0.05).toFixed(2),
+            FuelExtractors: 0,
+            Farms: 0,
+            Wells: 0
+        });
+    }
 
     strokes = [];
     console.log((MaxX - MinX) * (MaxY - MinY));
+
+    drawAll();
 });
 
 
