@@ -401,28 +401,32 @@ buildings.forEach(e => {
     if (urlMatch && urlMatch[1]) {
         const img = new Image();
         img.crossOrigin = 'anonymous';
-        console.log(2 / 3);
         img.src = urlMatch[1];
         buildingImages.set(e, img);
     }
-});
 
-buildings.forEach(e => {
     let isDragging = false;
-    let offsetX, offsetY;
+    let ghost = null;
 
     e.addEventListener('mousedown', (ev) => {
         isDragging = true;
-        offsetX = ev.offsetX;
-        offsetY = ev.offsetY;
-        ev.stopPropagation();
+        
+        ghost = document.createElement('div');
+        ghost.classList.add('Ghost');
+        ghost.style.backgroundImage = bgImage;
+        document.body.appendChild(ghost);
+
+        ghost.style.left = ev.offsetX + 'px';
+        ghost.style.top = ev.offsetY + 'px';
+
+        ev.preventDefault();
     });
 
-    e.addEventListener('mousemove', (ev) => {
+    canvas.addEventListener('mousemove', (ev) => {
         if (!isDragging) return;
 
-        e.style.left = (ev.pageX - offsetX) + 'px';
-        e.style.top = (ev.pageY - offsetY) + 'px';
+        ghost.style.left = ev.offsetX + 'px';
+        ghost.style.top = ev.offsetY + 'px';
     });
 
     canvas.addEventListener('mouseup', (ev) => {
@@ -430,9 +434,6 @@ buildings.forEach(e => {
         isDragging = false;
 
         const { x: cx, y: cy } = getCanvasPos(ev);
-
-        e.style.left = (ev.pageX - offsetX) + 'px';
-        e.style.top = (ev.pageY - offsetY) + 'px';
 
         for (let region of regions) {
             if (PointInPolygon([cx, cy], region.polygon)) {
@@ -476,33 +477,23 @@ buildings.forEach(e => {
                 const img = buildingImages.get(e);
 
                 if (img) {
-                    if (img.complete) {
-                        placedBuildings.push({
-                            img: img,
-                            x: cx - 20,
-                            y: cy - 20,
-                            width: 40,
-                            height: 40,
-                        });
-
-                    drawAll();
-                    } else {
-                        img.onload = () => {
-                            placedBuildings.push({
-                                img: img,
-                                x: cx - 20,
-                                y: cy - 20,
-                                width: 40,
-                                height: 40
-                            });
-
-                        drawAll();
-                        };
-                    }   
+                    placedBuildings.push({
+                        img: img,
+                        x: cx - 20,
+                        y: cy - 20,
+                        width: 40,
+                        height: 40,
+                    });
                 }
-
-            break;
+            
+                drawAll();
+                break;
             } 
+        }
+
+        if (ghost) {
+            document.body.removeChild(ghost);
+            ghost = null;
         }
     });
 });
