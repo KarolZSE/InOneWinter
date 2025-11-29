@@ -455,8 +455,10 @@ buildings.forEach(e => {
 
 const PeopleHTML = document.getElementById('People');
 const TemperatureHTML = document.getElementById('Temperature');
+const MoraleHTML = document.getElementById('Morale');
 let People = 2;
 let Temperature = 15;
+let Morale = 100;
 setInterval(() => {
     People++;
     PeopleHTML.textContent = People;
@@ -471,16 +473,19 @@ setInterval(() => {
     }
 
     if (Temperature <= 0) {
+        Morale--;
         People--;
     }
     
     FoodEarned -= People;
     if (FoodEarned <= 0) {
+        Morale--;
         People--;
     }
 
     WaterMined -= People;
     if (WaterMined <= 0) {
+        Morale--
         People--;
     }
 
@@ -488,9 +493,13 @@ setInterval(() => {
         console.log('Games Over!');
     }
 
+    if (Morale <= 0) {
+        console.log('Games Over!');
+    }
     FuelMined = Math.max(0, FuelMined);
     FoodEarned = Math.max(0, FoodEarned);
     WaterMined = Math.max(0, WaterMined);
+    MoraleHTML.textContent = Morale;
     WaterMinedHTML.textContent = WaterMined;
     FoodEarnedHTML.textContent = FoodEarned;
     FuelMinedHTML.textContent = Math.floor(FuelMined);
