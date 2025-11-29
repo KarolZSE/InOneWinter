@@ -65,6 +65,11 @@ body {
 }
 
 #FuelEx {
-    background-image: url('bomb1.png');
+    background-image: url('Pirates!_GoldMine.png');
+    background-size: 60px 60px;
+}
+
+#Farm {
+    background-image: url('Chicken_coop_brown.png');
     background-size: 60px 60px;
 }

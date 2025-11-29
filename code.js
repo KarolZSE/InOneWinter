@@ -12,6 +12,7 @@ let regions = [];
 let placedBuildings = [];
 let buildingImages = new Map();
 
+let GlobalSizeEstimate = 0;
 let Draw = false;
 let MaxX = MaxY = 0;
 let MinX = MinY = 1000;
@@ -64,6 +65,11 @@ function polygonCentroid(points) {
 
 function drawAll() {
     // context.clearRect(0, 0, canvas.width, canvas.height);
+    if (hoveredRegion) {
+        document.getElementById('RegionResources').style.display = 'inline';
+    } else {
+        document.getElementById('RegionResources').style.display = 'none';
+    }
 
     for (let region of regions) {
         context.beginPath();
@@ -75,7 +81,6 @@ function drawAll() {
             context.fillStyle = "rgba(255, 230, 0, 1)";
             context.fill();
         } else {
-            document.getElementById('RegionResources').style.display = 'none';
             context.fillStyle = region.fillColor;
             context.fill();
         }
@@ -116,7 +121,6 @@ BoardContainer.addEventListener('mousemove', (e) => {
     for (let region of regions) {
         if (PointInPolygon([x, y], region.polygon)) {
             hoveredRegion = region;
-            document.getElementById('RegionResources').style.display = 'inline';
             document.getElementById('text').textContent = region.text;
             document.getElementById('fuel').textContent = region.fuel;
             document.getElementById('food').textContent = region.food;
@@ -244,6 +248,7 @@ canvas.addEventListener('mouseup', (e) => {
     context.fill();
 
     let SizeEstimate = (MaxX - MinX) * (MaxY - MinY);
+    GlobalSizeEstimate += SizeEstimate;
     regions.push({
         polygon: [...strokes],
         text: '1234',
@@ -348,8 +353,8 @@ buildings.forEach(e => {
                     if (img.complete) {
                         placedBuildings.push({
                             img: img,
-                            x: cx,
-                            y: cy,
+                            x: cx - 40,
+                            y: cy - 40,
                             width: 80,
                             height: 80
                         });
@@ -359,8 +364,8 @@ buildings.forEach(e => {
                         img.onload = () => {
                             placedBuildings.push({
                                 img: img,
-                                x: cx,
-                                y: cy,
+                                x: cx - 40,
+                                y: cy - 40,
                                 width: 80,
                                 height: 80
                             });
@@ -386,8 +391,8 @@ setInterval(() => {
 }, 5000);
 
 setInterval(() => {
+    FuelMined -= (0.1 * (GlobalSizeEstimate / 1000)).toFixed(2);
     if (FuelMined > 0) {
-        FuelMined -= 0.5;
         Temperature = Math.min(Temperature + 1, 30);
     } else {
         Temperature--;
@@ -401,7 +406,8 @@ setInterval(() => {
         console.log('Games Over!');
     }
 
-    FuelMinedHTML.textContent = FuelMined;
+    FuelMined = Math.max(0, FuelMined);
+    FuelMinedHTML.textContent = Math.floor(FuelMined);
     TemperatureHTML.textContent = Temperature;
     PeopleHTML.textContent = People;
 }, 1000);
