@@ -9,8 +9,9 @@ body {
     top: 50%;
     transform: translate(-50%, -50%);
     border: 1px solid black;
-    width: 600px;
-    height: 600px;
+    width: 98vw;
+    height: 98vh;
+    z-index: -1;
 }
 
 #Board {
@@ -28,6 +29,7 @@ body {
     padding-left: 10px;
     padding-right: 10px;
     box-sizing: border-box;
+    background: white;
 }
 
 #Resources p {
@@ -72,4 +74,21 @@ body {
 #Farm {
     background-image: url('Chicken_coop_brown.png');
     background-size: 60px 60px;
+}
+
+#Well {
+    background-image: url('Medieval_Fountain_sprites/Medieval_Fountain_sprite01.png');
+    background-size: 60px 60px;
+}
+
+#FuelExSideInfo {
+    color: #b400e0;
+}
+
+#FoodEarnedSideInfo {
+    color: #00c400;
+}
+
+#WaterSideInfo {
+    color: #01c9b8;
 }

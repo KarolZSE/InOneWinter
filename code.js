@@ -1,10 +1,12 @@
 const canvas = document.getElementById("Board");
 const context = canvas.getContext('2d', { willReadFrequently: true});
+const BoardContainer = document.getElementById('BoardContainer');
 
 context.fillStyle = 'white';
-context.fillRect(0, 0, 600, 600);
+context.fillRect(0, 0, canvas.width, canvas.height);
 context.beginPath();
-context.arc(300, 300, 50, 0, 2 * Math.PI);
+console.log(BoardContainer.width / 2, BoardContainer.height / 2);
+context.arc(BoardContainer.offsetWidth / 2, BoardContainer.offsetHeight / 2, 50, 0, 2 * Math.PI);
 context.stroke();
 
 let strokes = [];
@@ -21,8 +23,11 @@ const FuelMinedHTML = document.getElementById('FuelMined');
 const FoodEarnedHTML = document.getElementById('FoodEarned');
 const FuelExSideInfo = document.getElementById('FuelExSideInfo');
 const FoodEarnedSideInfo = document.getElementById('FoodEarnedSideInfo');
+const WaterMinedHTML = document.getElementById('WaterMined');
+const WaterSideInfo = document.getElementById('WaterSideInfo');
 let FuelMined = 0;
 let FoodEarned = 100;
+let WaterMined = 100;
 
 function CheckForColor(e) {
     const rect = canvas.getBoundingClientRect();
@@ -105,8 +110,6 @@ function drawAll() {
     }
 }
 
-const BoardContainer = document.getElementById('BoardContainer');
-
 canvas.style.position = 'absolute';
 canvas.style.left = '0px';
 canvas.style.top = '0px';
@@ -137,8 +140,13 @@ BoardContainer.addEventListener('mousemove', (e) => {
             } else FuelExSideInfo.textContent = 'The region has run out off fuel';
 
             if (region.food - 1 >= 0) {
-                FoodEarnedSideInfo.textContent = `This region produces ${region.Farms} liter of fuel per second`;
+                FoodEarnedSideInfo.textContent = `This region produces ${region.Farms} kilograms of food per second`;
             } else FoodEarnedSideInfo.textContent = 'The region has run out off animals';
+            
+            if (region.water - 1 >= 0) {
+                WaterSideInfo.textContent = `This region produces ${region.Wells} liter of water per second`;
+            } else WaterSideInfo.textContent = 'The region has run out off water';
+
             break;
         }
     }
@@ -270,7 +278,8 @@ canvas.addEventListener('mouseup', (e) => {
         food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
         water: (SizeEstimate * Math.random() * 0.05).toFixed(2),
         FuelExtractors: 0,
-        Farms: 0
+        Farms: 0,
+        Wells: 0
     });
 
     const { x, y } = getCanvasPos(e);
@@ -368,6 +377,17 @@ buildings.forEach(e => {
                             clearInterval(Farming);
                         }
                     }, 1000);
+                } else if (e.id == 'Well') {
+                    region.Wells++;
+                    const WaterMining = setInterval(() => {
+                        if (region.water - 1 >= 0) {
+                            region.water--;
+                            WaterMinedHTML.textContent = ++WaterMined;
+                        } else {
+                            region.water = 0;
+                            clearInterval(WaterMining);
+                        }
+                    }, 1000);
                 }
                  
 
@@ -431,12 +451,19 @@ setInterval(() => {
         People--;
     }
 
+    WaterMined -= People;
+    if (WaterMined <= 0) {
+        People--;
+    }
+
     if (People <= 0) {
         console.log('Games Over!');
     }
 
     FuelMined = Math.max(0, FuelMined);
     FoodEarned = Math.max(0, FoodEarned);
+    WaterMined = Math.max(0, WaterMined);
+    WaterMinedHTML.textContent = WaterMined;
     FoodEarnedHTML.textContent = FoodEarned;
     FuelMinedHTML.textContent = Math.floor(FuelMined);
     TemperatureHTML.textContent = Temperature;
