@@ -497,3 +497,14 @@ setInterval(() => {
     TemperatureHTML.textContent = Temperature;
     PeopleHTML.textContent = People;
 }, 1000);
+
+let zoom = 1;
+document.getElementById('Plus').addEventListener('click', () => {
+    zoom += 0.1;
+    canvas.style.zoom = zoom; 
+});
+
+document.getElementById('Minus').addEventListener('click', () => {
+    zoom -= 0.1;
+    canvas.style.zoom = zoom; 
+});
