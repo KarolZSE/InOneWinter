@@ -18,8 +18,11 @@ let MaxX = MaxY = 0;
 let MinX = MinY = 1000;
 
 const FuelMinedHTML = document.getElementById('FuelMined');
+const FoodEarnedHTML = document.getElementById('FoodEarned');
 const FuelExSideInfo = document.getElementById('FuelExSideInfo');
+const FoodEarnedSideInfo = document.getElementById('FoodEarnedSideInfo');
 let FuelMined = 0;
+let FoodEarned = 100;
 
 function CheckForColor(e) {
     const rect = canvas.getBoundingClientRect();
@@ -132,6 +135,10 @@ BoardContainer.addEventListener('mousemove', (e) => {
             if (region.fuel - 1 >= 0) {
                 FuelExSideInfo.textContent = `This region produces ${region.FuelExtractors} liter of fuel per second`;
             } else FuelExSideInfo.textContent = 'The region has run out off fuel';
+
+            if (region.food - 1 >= 0) {
+                FoodEarnedSideInfo.textContent = `This region produces ${region.Farms} liter of fuel per second`;
+            } else FoodEarnedSideInfo.textContent = 'The region has run out off animals';
             break;
         }
     }
@@ -262,7 +269,8 @@ canvas.addEventListener('mouseup', (e) => {
         fuel: (SizeEstimate * Math.random() * 0.03).toFixed(2),
         food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
         water: (SizeEstimate * Math.random() * 0.05).toFixed(2),
-        FuelExtractors: 0
+        FuelExtractors: 0,
+        Farms: 0
     });
 
     const { x, y } = getCanvasPos(e);
@@ -349,7 +357,19 @@ buildings.forEach(e => {
                             clearInterval(FuelMining);
                         }
                     }, 1000);
+                } else if (e.id == 'Farm') {
+                    region.Farms++;
+                    const Farming = setInterval(() => {
+                        if (region.food - 1 >= 0) {
+                            region.food--;
+                            FoodEarnedHTML.textContent = ++FoodEarned;
+                        } else {
+                            region.food = 0;
+                            clearInterval(Farming);
+                        }
+                    }, 1000);
                 }
+                 
 
                 const img = buildingImages.get(e);
 
@@ -406,11 +426,18 @@ setInterval(() => {
         People--;
     }
     
+    FoodEarned -= People;
+    if (FoodEarned <= 0) {
+        People--;
+    }
+
     if (People <= 0) {
         console.log('Games Over!');
     }
 
     FuelMined = Math.max(0, FuelMined);
+    FoodEarned = Math.max(0, FoodEarned);
+    FoodEarnedHTML.textContent = FoodEarned;
     FuelMinedHTML.textContent = Math.floor(FuelMined);
     TemperatureHTML.textContent = Temperature;
     PeopleHTML.textContent = People;
