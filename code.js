@@ -132,9 +132,37 @@ BoardContainer.addEventListener('mousemove', (e) => {
         if (PointInPolygon([x, y], region.polygon)) {
             hoveredRegion = region;
             document.getElementById('text').textContent = region.text;
-            document.getElementById('fuel').textContent = region.fuel;
-            document.getElementById('food').textContent = region.food;
-            document.getElementById('water').textContent = region.water;
+
+            let fuel = document.getElementById('fuel');
+            if (region.fuel > 50) {
+                fuel.style.color = 'green';
+            } else if (region.fuel >= 1) {
+                fuel.style.color = '#ff9900';
+            } else {
+                fuel.style.color = 'red';
+            }
+            fuel.textContent = region.fuel;
+
+            let food = document.getElementById('food');
+            if (region.food > 50) {
+                food.style.color = 'green';
+            } else if (region.food >= 1) {
+                food.style.color = '#ff9900';
+            } else {
+                food.style.color = 'red';
+            }
+            food.textContent = region.food;
+
+            water = document.getElementById('water');
+            if (region.water > 50) {
+                water.style.color = 'green';
+            } else if (region.water >= 1) {
+                water.style.color = '#ff9900';
+            } else {
+                water.style.color = 'red';
+            }
+            water.textContent = region.water;
+
             if (region.fuel - 1 >= 0) {
                 FuelExSideInfo.textContent = `This region produces ${region.FuelExtractors} liter of fuel per second`;
             } else FuelExSideInfo.textContent = 'The region has run out off fuel';
