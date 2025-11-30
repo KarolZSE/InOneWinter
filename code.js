@@ -525,7 +525,8 @@ buildings.forEach(e => {
                     const FuelMining = setInterval(() => {
                         if (region.fuel - 1 >= 0) {
                             region.fuel--;
-                            FuelMinedHTML.textContent = ++FuelMined;
+                            FuelMined++;
+                            FuelMinedHTML.textContent = FuelMined.toFixed(2);
                         } else {
                             region.fuel = 0;
                             if (region.FuelExtractors > 0) {

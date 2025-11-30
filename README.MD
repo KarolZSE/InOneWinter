@@ -43,5 +43,8 @@ Another important part of the game is the building mechanic. You have 3 structur
     - Then **Drag and drop** the icon to where you want to place it.
     - You can only drop it in to an existing region, it will mine the resources of that region.
 
+## Move around the map
+If you run out of space in the first begining canvas, you can **move your cursor to the edge** of a game (where the border is) to discover new terrain
+
 ## ZOOM
 - You can zoom in to the canvas by clicking the buttons on the right-bottom side of the screen.
