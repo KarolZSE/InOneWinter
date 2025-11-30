@@ -42,6 +42,7 @@ Another important part of the game is the building mechanic. You have 3 structur
     - First look into the **left-bottom side** of your screen.
     - Then **Drag and drop** the icon to where you want to place it.
     - You can only drop it into an existing region, it will mine the resources of that region.
+- To destroy a building **right click** on top of it.
 
 ## Move around the map
 If you run out of space in the first beginning canvas, you can **move your cursor to the edge** of a game (where the border is) to discover new terrain
