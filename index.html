@@ -25,14 +25,13 @@
             <h2>Name: <span id="text"></span></h2>
             <br>
             <h2>Resources:</h2>
-            <ul>
+            <ul id="ListOfResources">
                 <li><span id="fuel"></span> KG Fuel</li>
                 <li><span id="food"></span> KG Food</li>
                 <li><span id="water"></span> KG Water</li>
             </ul>
-            <br>
             <h2>Buildings:</h2>
-            <ul>
+            <ul id="BuildingsRegionInfo">
                 <li id="FuelExSideInfo">1</li>
                 <li id='FoodEarnedSideInfo'>2</li>
             <li id='WaterSideInfo'>3</li>
@@ -46,6 +45,12 @@
         <div id="ZoomControls">
             <div id="Plus">+</div>
             <div id="Minus">-</div>
+        </div>
+        <div id="EndWindow">
+            <h1>I'm sorry to tell you but your survivors camps has died out :(</h1>
+            <h2>Cause of defeat: <span id="CauseOfDeath"></span></h2>
+            <p>You'r camp has survived for <span id="Time">...</span> seconds</p>
+            <button id="OneLastTime">Look around your base</button>
         </div>
         <canvas id="Board" width="6000" height="6000"></canvas>
     </div>

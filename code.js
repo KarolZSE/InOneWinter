@@ -9,6 +9,9 @@ let regions = [];
 let placedBuildings = [];
 let buildingImages = new Map();
 
+let Paused = false;
+let StartTime = Date.now();
+
 let GlobalSizeEstimate = 0;
 let Draw = false;
 let MaxX = MaxY = 0;
@@ -58,6 +61,7 @@ function getCanvasPos(e) {
 }
 
 canvas.addEventListener('mousedown', (e) => {
+    if (Paused) return;
     if (!CheckForColor(e)) return;
     Draw = true;
     const { x, y } = getCanvasPos(e);
@@ -82,10 +86,17 @@ function drawAll() {
 
     context.fillStyle = 'white';
     context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = 'rgba(0, 68, 255, 0.5)';
     context.beginPath();
     context.arc(BoardContainer.offsetWidth / 2, BoardContainer.offsetHeight / 2, 50, 0, 2 * Math.PI);
+    context.fill();
     context.stroke();
-    
+    context.fillStyle = 'rgba(0, 0, 0, 1)';
+    context.font = '16px sans-serif';
+    context.textBaseline = "bottom";
+    context.fillText("Region 0", BoardContainer.offsetWidth / 2 - 30, BoardContainer.offsetHeight / 2);
+    context.textBaseline = 'top';
+    context.fillText("(build around it)", BoardContainer.offsetWidth / 2 - 55, BoardContainer.offsetHeight / 2);
     context.fillStyle = 'rgba(0, 68, 255, 0.5)';
 
     if (hoveredRegion) {
@@ -133,6 +144,7 @@ const rect = BoardContainer.getBoundingClientRect();
 mousePos = { x: BoardContainer.width / 2, y: BoardContainer.height / 2 };
 
 BoardContainer.addEventListener('mousemove', (e) => {
+    if (Paused) return;
     const rect = BoardContainer.getBoundingClientRect();
     mousePos.x = e.clientX - rect.left;
     mousePos.y = e.clientY - rect.top;
@@ -205,7 +217,7 @@ BoardContainer.addEventListener('mousemove', (e) => {
 });
 
 BoardContainer.addEventListener('contextmenu', (e) => {
-
+    if (Paused) return;
     const { x, y } = getCanvasPos(e);
 
     for (let region of regions) {
@@ -458,6 +470,7 @@ buildings.forEach(e => {
     let ghost = null;
 
     e.addEventListener('mousedown', (ev) => {
+        if (Paused) return;
         isDragging = true;
         
         ghost = document.createElement('div');
@@ -576,15 +589,21 @@ buildings.forEach(e => {
 const PeopleHTML = document.getElementById('People');
 const TemperatureHTML = document.getElementById('Temperature');
 const MoraleHTML = document.getElementById('Morale');
+const TimeHTML = document.getElementById('Time');
+const CauseOfDeath = document.getElementById('CauseOfDeath');
+const EndWindow = document.getElementById('EndWindow');
+
 let People = 2;
 let Temperature = 15;
 let Morale = 100;
 setInterval(() => {
+    if (Paused) return;
     People++;
     PeopleHTML.textContent = People;
 }, 5000);
 
 setInterval(() => {
+    if (Paused) return;
     FuelMined -= (0.1 * (GlobalSizeEstimate / 1000)).toFixed(2);
     if (FuelMined > 0) {
         Temperature = Math.min(Temperature + 1, 30);
@@ -595,26 +614,36 @@ setInterval(() => {
     if (Temperature <= 0) {
         Morale--;
         People--;
+        CauseOfDeath.textContent = 'Hypothermia';
     }
     
     FoodEarned -= People;
     if (FoodEarned <= 0) {
         Morale--;
         People--;
+        CauseOfDeath.textContent = 'Lack of food';
     }
 
     WaterMined -= People;
     if (WaterMined <= 0) {
         Morale--
         People--;
+        CauseOfDeath.textContent = 'Lack of water';
     }
 
     if (People <= 0) {
+        TimeHTML.textContent = (Date.now() - StartTime) / 1000;
+        Paused = true;
         console.log('Games Over!');
+        EndWindow.style.display = 'flex';
     }
 
     if (Morale <= 0) {
+        CauseOfDeath.textContent = 'Morale was so low people overthrowned you!';
+        TimeHTML.textContent = (Date.now() - StartTime) / 1000;
+        Paused = true;
         console.log('Games Over!');
+        EndWindow.style.display = 'flex';
     }
     FuelMined = Math.max(0, FuelMined);
     FoodEarned = Math.max(0, FoodEarned);
@@ -636,4 +665,8 @@ document.getElementById('Plus').addEventListener('click', () => {
 document.getElementById('Minus').addEventListener('click', () => {
     zoom -= 0.1;
     canvas.style.zoom = zoom; 
+});
+
+document.getElementById('OneLastTime').addEventListener('click', () => {
+    EndWindow.style.display = 'none';
 });
