@@ -1,3 +1,5 @@
+# Please use chromium based browser if you experience performance issues with the game
+
 # Winters surviviors
 Make a camp, collect resources and survive as long as you can in the harsh winter!
 
