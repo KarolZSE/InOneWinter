@@ -218,8 +218,27 @@ BoardContainer.addEventListener('mousemove', (e) => {
 
 BoardContainer.addEventListener('contextmenu', (e) => {
     if (Paused) return;
+
     const { x, y } = getCanvasPos(e);
 
+    for (let i = placedBuildings.length - 1; i >= 0; i--) {
+        let b = placedBuildings[i];
+
+        if (
+            x >= b.x &&
+            x <= b.x + b.width &&
+            y >= b.y &&
+            y <= b.y + b.height
+        ) {
+            e.preventDefault();
+            clearInterval(b.interval);
+            b.region[b.regionBuildingType]--;
+            placedBuildings.splice(i, 1);
+            drawAll();
+            return;
+        }
+    }
+    
     for (let region of regions) {
         if (PointInMultiPolygon([x, y], region.polygon)) {
             e.preventDefault();
@@ -496,6 +515,7 @@ buildings.forEach(e => {
         isDragging = false;
 
         const { x: cx, y: cy } = getCanvasPos(ev);
+        let interval, regionBuildingType;
 
         for (let region of regions) {
             if (PointInMultiPolygon([cx, cy], region.polygon)) {
@@ -520,6 +540,8 @@ buildings.forEach(e => {
                             clearInterval(FuelMining);
                         }
                     }, 1000);
+                    regionBuildingType = 'FuelExtractors';
+                    interval = FuelMining;
                 } else if (e.id == 'Farm') {
                     region.Farms++;
                     const Farming = setInterval(() => {
@@ -540,6 +562,8 @@ buildings.forEach(e => {
                             clearInterval(Farming);
                         }
                     }, 1000);
+                    regionBuildingType = 'Farms';
+                    interval = Farming;
                 } else if (e.id == 'Well') {
                     region.Wells++;
                     const WaterMining = setInterval(() => {
@@ -556,10 +580,12 @@ buildings.forEach(e => {
                                 setTimeout(() => {
                                     Events.removeChild(info);
                                 }, 3000);
-                            }                          
+                            }                        
                             clearInterval(WaterMining);
                         }
                     }, 1000);
+                    regionBuildingType = 'Wells';
+                    interval = WaterMining;
                 }
 
                 const img = buildingImages.get(e);
@@ -571,6 +597,9 @@ buildings.forEach(e => {
                         y: cy - 20,
                         width: 40,
                         height: 40,
+                        interval: interval,
+                        region: region,
+                        regionBuildingType: regionBuildingType
                     });
                 }
             
