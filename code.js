@@ -1,7 +1,9 @@
 const canvas = document.getElementById("Board");
 const context = canvas.getContext('2d', { willReadFrequently: true});
 const BoardContainer = document.getElementById('BoardContainer');
+const Events = document.getElementById('Events');
 
+let RegionsCount = 0;
 let strokes = [];
 let regions = [];
 let placedBuildings = [];
@@ -99,7 +101,7 @@ function drawAll() {
         context.closePath();
 
         if (region === hoveredRegion) {
-            context.fillStyle = "rgba(255, 230, 0, 1)";
+            context.fillStyle = "rgba(180, 230, 0, 1)";
             context.fill();
         } else {
             context.fillStyle = 'rgba(0, 68, 255, 0.5)';
@@ -108,7 +110,7 @@ function drawAll() {
 
         if (region.text) {
             const [cx, cy] = polygonCentroid(region.polygon);
-            context.fillStyle = 'rgba(0, 68, 255, 0.1)';
+            context.fillStyle = 'rgba(0, 0, 0, 1)';
             context.font = '16px sans-serif';
             context.fillText(region.text, cx, cy);
         }
@@ -200,6 +202,46 @@ BoardContainer.addEventListener('mousemove', (e) => {
     if (y > MaxY) MaxY = y;
     
 });
+
+BoardContainer.addEventListener('contextmenu', (e) => {
+
+    const { x, y } = getCanvasPos(e);
+
+    for (let region of regions) {
+        if (PointInMultiPolygon([x, y], region.polygon)) {
+            e.preventDefault();
+
+            const [cx, cy] = polygonCentroid(region.polygon);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = region.text;
+            input.classList.add('NameChange');
+            input.style.left = `${cx * zoom + canvas.offsetLeft}px`;
+            input.style.top = `${cy * zoom + canvas.offsetTop}px`;
+
+            document.body.appendChild(input);
+
+            input.focus();
+            input.select();
+
+            const finalize = () => {
+                region.text = input.value;
+                drawAll();
+                document.body.removeChild(input);
+            }
+
+            input.addEventListener('blur', finalize);
+            input.addEventListener('keydown', (ev) => {
+                if (ev.key === 'Enter') {
+                    finalize();
+                }
+            });
+
+            break;
+        }
+    }
+})
 
 function scrollCanvas() {
     const rect = BoardContainer.getBoundingClientRect();
@@ -304,25 +346,6 @@ function polygonArea(points) {
     return Math.abs(area / 2);
 }
 
-function polygonOverlap(polyA, polyB) {
-    const intersection = martinez.intersection([polyA], [polyB]);
-    return intersection && intersection.length > 0;
-}
-
-function flattenAndFilter(polys, minArea = 20) {
-    let result = [];
-    function _flatten(ps) {
-        for (let p of ps) {
-            if (typeof p[0][0] === 'number') {
-                if (polygonArea(p) >= minArea) result.push(p);
-            } else {
-                _flatten(p);
-            }
-        }
-    }
-    _flatten(polys);
-    return result;
-}
 canvas.addEventListener('mouseup', (e) => {
     Draw = false;
 
@@ -337,9 +360,9 @@ canvas.addEventListener('mouseup', (e) => {
     
     let newPoly = [[...strokes]];
 
-    if (regions.length > 0) {
-        const existingPolygons = regions.map(r => r.polygon);
-        newPoly = martinez.diff(newPoly, existingPolygons);
+    for (let region of regions) {
+        newPoly = martinez.diff(newPoly, [region.polygon]);
+        if (!newPoly || newPoly.length === 0) break;
     }
 
     if (!newPoly || newPoly.length === 0) {
@@ -361,36 +384,17 @@ canvas.addEventListener('mouseup', (e) => {
         return result;
     }
     
-    const flattened = flattenAndFilter(newPoly);
-
-    /*
-    let overlaps = false;
-
-    for (const newPoly of flattened) {
-        for (const existingRegion of regions) {
-            if (polygonOverlap(newPoly, existingRegion.polygon)) {
-                overlaps = true;
-                break;
-            }
-        }
-
-        if (overlaps) break;
-    }
-
-    if (overlaps) {
-        strokes = [];
-        console.log('test2')
-        return;
-    }
-        */
+    const flattened = flatten(newPoly);
 
     for (let poly of flattened) {
         let SizeEstimate = polygonArea(poly);
+        if (SizeEstimate < 100) return;
         GlobalSizeEstimate += SizeEstimate;
+        RegionsCount++;
 
         regions.push({
             polygon: poly,
-            text: '1234',
+            text: `Region ${RegionsCount}`,
             fillColor: 'green',
             fuel: (SizeEstimate * Math.random() * 0.03).toFixed(2),
             food: (SizeEstimate * Math.random() * 0.05).toFixed(2),
@@ -460,8 +464,8 @@ buildings.forEach(e => {
         ghost.style.backgroundImage = bgImage;
         document.body.appendChild(ghost);
 
-        ghost.style.left = ev.offsetX + 'px';
-        ghost.style.top = ev.offsetY + 'px';
+        ghost.style.left = ev.clientX - 20 + 'px';
+        ghost.style.top = ev.clientY - 20 + 'px';
 
         ev.preventDefault();
     });
@@ -469,8 +473,8 @@ buildings.forEach(e => {
     canvas.addEventListener('mousemove', (ev) => {
         if (!isDragging) return;
 
-        ghost.style.left = ev.offsetX + 'px';
-        ghost.style.top = ev.offsetY + 'px';
+        ghost.style.left = ev.clientX - 20 + 'px';
+        ghost.style.top = ev.clientY - 20 + 'px';
     });
 
     canvas.addEventListener('mouseup', (ev) => {
@@ -490,6 +494,15 @@ buildings.forEach(e => {
                             FuelMinedHTML.textContent = ++FuelMined;
                         } else {
                             region.fuel = 0;
+                            if (region.FuelExtractors > 0) {
+                                region.FuelExtractors = 0;
+                                const info = document.createElement('li');
+                                info.textContent = `${region.text} has run out off fuel!`;
+                                Events.appendChild(info);
+                                setTimeout(() => {
+                                    Events.removeChild(info);
+                                }, 3000);
+                            }
                             clearInterval(FuelMining);
                         }
                     }, 1000);
@@ -501,6 +514,15 @@ buildings.forEach(e => {
                             FoodEarnedHTML.textContent = ++FoodEarned;
                         } else {
                             region.food = 0;
+                            if (region.Farms > 0) {
+                                region.Farms = 0;
+                                const info = document.createElement('li');
+                                info.textContent = `${region.text} has run out off food!`;
+                                Events.appendChild(info);
+                                setTimeout(() => {
+                                    Events.removeChild(info);
+                                }, 3000);
+                            }                          
                             clearInterval(Farming);
                         }
                     }, 1000);
@@ -512,11 +534,19 @@ buildings.forEach(e => {
                             WaterMinedHTML.textContent = ++WaterMined;
                         } else {
                             region.water = 0;
+                            if (region.Wells > 0) {
+                                region.Wells = 0;
+                                const info = document.createElement('li');
+                                info.textContent = `${region.text} has run out off water!`;
+                                Events.appendChild(info);
+                                setTimeout(() => {
+                                    Events.removeChild(info);
+                                }, 3000);
+                            }                          
                             clearInterval(WaterMining);
                         }
                     }, 1000);
                 }
-                 
 
                 const img = buildingImages.get(e);
 

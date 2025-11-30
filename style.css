@@ -118,3 +118,19 @@ body {
     font-size: 60px;
     line-height: 60px;
 }
+
+.NameChange {
+    position: absolute;
+    font-size: 16px;
+    padding: 2px;
+    border: 1px solid black;
+    background: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+    min-width: 50px;
+}
+
+#CurrentEvents {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
