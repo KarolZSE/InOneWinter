@@ -127,6 +127,7 @@ canvas.style.top = '0px';
 
 
 let hoveredRegion = null;
+drawAll();
 
 const rect = BoardContainer.getBoundingClientRect();
 mousePos = { x: BoardContainer.width / 2, y: BoardContainer.height / 2 };

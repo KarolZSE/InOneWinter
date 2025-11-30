@@ -16,18 +16,23 @@ body {
 
 #Board {
     position: relative;
+    z-index: -2;
 }
 
 #Resources {
+    position: absolute;
     display: flex;
     justify-content: space-between;
     color: black;
     border: 1px solid red;
     width: 600px;
-    height: 40px;
+    height: 45px;
     z-index: 2;
+    left: 10px;
+    top: 10px;
     padding-left: 10px;
     padding-right: 10px;
+    padding-top: 5px;
     box-sizing: border-box;
     background: white;
 }
@@ -53,6 +58,7 @@ body {
     display: grid;
     position: absolute;
     bottom: 10px;
+    left: 10px;
     height: 60px;
     width: 180px;
     grid-template-columns: repeat(3, 60px);
@@ -131,6 +137,7 @@ body {
 
 #CurrentEvents {
     position: absolute;
+    width: 250px;
     right: 10px;
     top: 10px;
 }

@@ -7,49 +7,47 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="Resources">Resources
-        <div>People: <p id="People">1</p></div>
-        <div>Fuel: <p id="FuelMined">0</p></div>
-        <div>Food: <p id="FoodEarned">100</p></div>
-        <div>Water: <p id="WaterMined">100</p></div>
-        <div>Morale: <p id="Morale">100</p></div>
-        <div>Temperature: <p><span id="Temperature">5</span> *C</p></div>
-    </div>
-
-    <div id="CurrentEvents">
-        <h1>Current events</h1>
-        <ul id="Events"></ul>
-    </div>
-    
     <div id="BoardContainer">
-        <canvas id="Board" width="6000" height="6000"></canvas>
-    </div>
-    <div id="RegionResources">
-        <h1>Selected region:</h1>
-        <h2>Name: <span id="text"></span></h2>
-        <br>
-        <h2>Resources:</h2>
-        <ul>
-            <li><span id="fuel"></span> KG Fuel</li>
-            <li><span id="food"></span> KG Food</li>
-            <li><span id="water"></span> KG Water</li>
-        </ul>
-        <br>
-        <h2>Buildings:</h2>
-        <ul>
-            <li id="FuelExSideInfo">1</li>
-            <li id='FoodEarnedSideInfo'>2</li>
+        <div id="Resources">Resources
+            <div>People: <p id="People">1</p></div>
+            <div>Fuel: <p id="FuelMined">0</p></div>
+            <div>Food: <p id="FoodEarned">100</p></div>
+            <div>Water: <p id="WaterMined">100</p></div>
+            <div>Morale: <p id="Morale">100</p></div>
+            <div>Temperature: <p><span id="Temperature">5</span> *C</p></div>
+        </div>
+        <div id="CurrentEvents">
+            <h1>Current events</h1>
+            <ul id="Events"></ul>
+        </div>
+        <div id="RegionResources">
+            <h1>Selected region:</h1>
+            <h2>Name: <span id="text"></span></h2>
+            <br>
+            <h2>Resources:</h2>
+            <ul>
+                <li><span id="fuel"></span> KG Fuel</li>
+                <li><span id="food"></span> KG Food</li>
+                <li><span id="water"></span> KG Water</li>
+            </ul>
+            <br>
+            <h2>Buildings:</h2>
+            <ul>
+                <li id="FuelExSideInfo">1</li>
+                <li id='FoodEarnedSideInfo'>2</li>
             <li id='WaterSideInfo'>3</li>
-        </ul>
-    </div>
-    <div id="BuildingsMenu">       
-        <div draggable="true" id="FuelEx"></div>
-        <div draggable="true" id="Farm"></div>
-        <div draggable="true" id="Well"></div>
-    </div>
-    <div id="ZoomControls">
-        <div id="Plus">+</div>
-        <div id="Minus">-</div>
+            </ul>
+        </div>
+        <div id="BuildingsMenu">       
+            <div draggable="true" id="FuelEx"></div>
+            <div draggable="true" id="Farm"></div>
+            <div draggable="true" id="Well"></div>
+        </div>
+        <div id="ZoomControls">
+            <div id="Plus">+</div>
+            <div id="Minus">-</div>
+        </div>
+        <canvas id="Board" width="6000" height="6000"></canvas>
     </div>
 </body>
 <script src="code.js"></script>
