@@ -383,11 +383,6 @@ canvas.addEventListener('mouseup', (e) => {
     if (strokes.length === 0) {
         return;
     }
-
-    if (!CheckForColor(e)) {
-        strokes = [];
-        return;
-    }
     
     let newPoly = [[...strokes]];
 
