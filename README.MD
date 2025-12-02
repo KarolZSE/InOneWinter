@@ -40,7 +40,7 @@ To keep your population alive you have to balance between 3 resources (aka 5 val
 
 ## Building
 !Important you cannot place buildings on the region 0!
-Another important part of the game is the building mechanic. You have 3 structures: the fuel extractor, the farm and the well.
+- Another important part of the game is the building mechanic. You have 3 structures: the fuel extractor, the farm and the well.
 - To place a building:
     - First look into the **left-bottom side** of your screen.
     - Then **Drag and drop** the icon to where you want to place it.
