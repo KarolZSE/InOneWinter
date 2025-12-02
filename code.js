@@ -95,7 +95,7 @@ function drawAll() {
     context.textBaseline = "bottom";
     context.fillText("Region 0", BoardContainer.offsetWidth / 2 - 30, BoardContainer.offsetHeight / 2);
     context.textBaseline = 'top';
-    context.fillText("(build around it)", BoardContainer.offsetWidth / 2 - 55, BoardContainer.offsetHeight / 2);
+    context.fillText("(make regions around it)", BoardContainer.offsetWidth / 2 - 55, BoardContainer.offsetHeight / 2);
     context.fillStyle = 'rgba(0, 68, 255, 0.5)';
 
     if (hoveredRegion) {
