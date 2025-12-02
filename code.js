@@ -62,7 +62,6 @@ function getCanvasPos(e) {
 
 canvas.addEventListener('mousedown', (e) => {
     if (Paused) return;
-    if (!CheckForColor(e)) return;
     Draw = true;
     const { x, y } = getCanvasPos(e);
     MinX = MaxX = x;
