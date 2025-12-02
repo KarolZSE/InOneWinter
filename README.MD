@@ -1,3 +1,5 @@
+# After the last stonemason review, I removed the requirement that each region must be connected to the previous one. You can now draw a region wherever you like (instructions are provided below).
+
 # Please use chromium based browser if you experience performance issues with the game
 
 # Winters survivors
@@ -5,9 +7,9 @@ Make a camp, collect resources and survive as long as you can in the harsh winte
 
 # Gameplay
 - To place a new region:
-    - start by **left clicking** on an already existing region (**You can only create a region connected to a region before!**).
+    - start by **left clicking**.
     - While **holding the button** draw the new region.
-    - To end marking the terrain for the region **stop holding the mouse button** while also **being connected to an already existing region**.
+    - To end marking the terrain for the region **stop holding the mouse button**.
 - To change the name of a region **right click on top of it**.
 
 ## Resources
@@ -37,6 +39,7 @@ To keep your population alive you have to balance between 3 resources (aka 5 val
     - If **morale reaches 0** you lose the game.
 
 ## Building
+!Important you cannot place buildings on the region 0!
 Another important part of the game is the building mechanic. You have 3 structures: the fuel extractor, the farm and the well.
 - To place a building:
     - First look into the **left-bottom side** of your screen.
